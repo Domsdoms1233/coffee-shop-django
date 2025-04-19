@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Корзина | Orange Coffee{% endblock %}
+
+{% block content %}
+<div class="cart-container">
+    <h2><i class="fas fa-shopping-cart"></i> Ваша корзина</h2>
+    
+    {% if items %}
+    <div class="cart-items">
+        {% for item in items %}
+        <div class="cart-item">
+            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+            
+            <div class="item-info">
+                <h3>{{ item.product.name }}</h3>
+                <p class="item-price">{{ item.product.price }} ₽ × {{ item.quantity }}</p>
+            </div>
+            
+            <div class="item-actions">
+                <form method="POST" action="{% url 'update_quantity' item.id %}">
+                    {% csrf_token %}
+                    <input type="number" name="quantity" value="{{ item.quantity }}" min="1">
+                    <button type="submit" class="btn-update">Обновить</button>
+                </form>
+                <a href="{% url 'remove_from_cart' item.id %}" class="btn-remove">
+                    <i class="fas fa-trash"></i>
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <div class="cart-total">
+        <h3>Итого: {{ total }} ₽</h3>
+        <a href="{% url 'checkout' %}" class="btn btn-primary">Оформить заказ</a>
+    </div>
+    {% else %}
+    <div class="cart-empty">
+        <i class="fas fa-coffee"></i>
+        <p>Ваша корзина пуста</p>
+        <a href="{% url 'home' %}" class="btn">Перейти в меню</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,90 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Fox Coffee{% endblock %}</title>
+    
+    <!-- Подключение Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Основные стили -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    
+    <!-- Дополнительные стили из блоков -->
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Шапка сайта -->
+    <header class="site-header">
+        <div class="header-container">
+            <a href="{% url 'home' %}" class="logo">
+                <img src="{% static 'images/fox-logo.png' %}" alt="Fox Coffee" class="logo-image">
+                Fox Coffee
+            </a>
+            
+            <nav class="main-nav">
+                <div class="user-actions">
+                    <a href="{% url 'cart' %}" class="cart-link">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count">
+                            {% if request.user.is_authenticated %}
+                                {{ request.user.cart.cartitem_set.count }}
+                            {% else %}0{% endif %}
+                        </span>
+                    </a>
+                    
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'profile' %}" class="profile-link">
+                            <i class="fas fa-user"></i> {{ user.username }}
+                        </a>
+                        <a href="{% url 'logout' %}" class="logout-link">Выйти</a>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="login-link">Войти</a>
+                        <a href="{% url 'register' %}" class="register-link">Регистрация</a>
+                    {% endif %}
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Основное содержимое -->
+    <main class="container">
+        {% include 'includes/messages.html' %}
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Подвал сайта -->
+    <footer class="site-footer">
+        <div class="footer-container">
+            <div class="footer-section">
+                <h3>Fox Coffee</h3>
+                <p>Лучший кофе с 2023 года</p>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Контакты</h3>
+                <p><i class="fas fa-map-marker-alt"></i> ул. Кофейная, 123</p>
+                <p><i class="fas fa-phone"></i> +7 (123) 456-78-90</p>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Часы работы</h3>
+                <p>Пн-Пт: 8:00 - 22:00</p>
+                <p>Сб-Вс: 9:00 - 23:00</p>
+            </div>
+        </div>
+        
+        <div class="copyright">
+            <p>&copy; 2025 Fox Coffee. Все права защищены.</p>
+        </div>
+    </footer>
+
+    <!-- Основные скрипты -->
+    <script src="{% static 'js/main.js' %}"></script>
+    
+    <!-- Дополнительные скрипты из блоков -->
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

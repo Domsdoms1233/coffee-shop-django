@@ -1,0 +1,18 @@
+# Django
+*.sqlite3
+*.pyc
+__pycache__/
+migrations/
+
+# Virtual Environment
+venv/
+.env/
+.env.local
+
+# IDE
+.idea/
+.vscode/
+
+# Static files (если они собираются через collectstatic)
+/staticfiles/
+/media/
