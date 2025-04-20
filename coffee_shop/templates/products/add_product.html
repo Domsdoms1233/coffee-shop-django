@@ -1,49 +1,113 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}Добавить продукт | Orange Coffee{% endblock %}
+{% block title %}Добавить кофе | Fox Coffee{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/add_product.js' %}"></script>
+{% endblock %}
 
 {% block content %}
-<section class="product-form-section">
-    <div class="container">
-        <h2>Добавить новый продукт</h2>
+<div class="auth-page">
+    <div class="auth-card">
+        <div class="auth-header">
+            <i class="fas fa-coffee"></i>
+            <h2>Добавить новый кофе</h2>
+        </div>
         
-        <form method="POST" enctype="multipart/form-data" class="product-form">
+        <form method="POST" enctype="multipart/form-data" class="auth-form" id="add-product-form">
             {% csrf_token %}
             
             <div class="form-group">
-                <label>Название:</label>
+                <label for="{{ form.name.id_for_label }}">
+                    <i class="fas fa-tag"></i> Название кофе
+                </label>
                 {{ form.name }}
+                {% if form.name.errors %}
+                <div class="error-text">{{ form.name.errors }}</div>
+                {% endif %}
             </div>
             
             <div class="form-group">
-                <label>Описание:</label>
+                <label for="{{ form.description.id_for_label }}">
+                    <i class="fas fa-align-left"></i> Описание
+                </label>
                 {{ form.description }}
+                {% if form.description.errors %}
+                <div class="error-text">{{ form.description.errors }}</div>
+                {% endif %}
             </div>
             
             <div class="form-row">
                 <div class="form-group">
-                    <label>Цена:</label>
+                    <label for="{{ form.price.id_for_label }}">
+                        <i class="fas fa-ruble-sign"></i> Цена
+                    </label>
                     {{ form.price }}
+                    {% if form.price.errors %}
+                    <div class="error-text">{{ form.price.errors }}</div>
+                {% endif %}
                 </div>
                 
                 <div class="form-group">
-                    <label>Категория:</label>
-                    {{ form.category }}
+                    <label for="{{ form.category.id_for_label }}">
+                        <i class="fas fa-list"></i> Категория
+                    </label>
+                    <div class="select-with-add">
+                        {{ form.category }}
+                        <button type="button" class="add-btn" id="add-category-btn">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                    {% if form.category.errors %}
+                    <div class="error-text">{{ form.category.errors }}</div>
+                    {% endif %}
                 </div>
             </div>
             
             <div class="form-group">
-                <label>Изображение:</label>
-                {{ form.image }}
+                <label class="image-upload-label">
+                    <i class="fas fa-image"></i> Изображение кофе
+                    <div class="upload-area" id="upload-area">
+                        <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                        <span id="file-name">Выберите файл</span>
+                        {{ form.image }}
+                    </div>
+                </label>
+                {% if form.image.errors %}
+                <div class="error-text">{{ form.image.errors }}</div>
+                {% endif %}
             </div>
             
             <div class="form-check">
                 {{ form.available }}
-                <label class="form-check-label">Доступен для заказа</label>
+                <label for="{{ form.available.id_for_label }}" class="form-check-label">
+                    Доступен для заказа
+                </label>
             </div>
             
-            <button type="submit" class="btn btn-primary">Добавить продукт</button>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-plus-circle"></i> Добавить кофе
+                </button>
+            </div>
         </form>
     </div>
-</section>
-{% endblock %}
+</div>
+
+<!-- Модальное окно для категорий -->
+<div class="modal-overlay" id="category-modal">
+    <div class="modal-content">
+        <button class="close-modal">&times;</button>
+        <h3><i class="fas fa-tag"></i> Новая категория</h3>
+        <form id="category-form">
+            {% csrf_token %}
+            <div class="form-group">
+                <input type="text" name="name" placeholder="Название категории" required class="form-control">
+            </div>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Сохранить
+            </button>
+        </form>
+    </div>
+</div>

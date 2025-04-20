@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 from .models import Product, Category
-from .forms import ProductForm 
+from .forms import ProductForm
 
 def home_view(request):
     products = Product.objects.filter(available=True)
@@ -22,7 +23,6 @@ def product_detail_view(request, product_id):
     return render(request, 'products/product_detail.html', {'product': product})
 
 @login_required
-@user_passes_test(lambda u: u.is_staff)  # Только для персонала
 def add_product_view(request):
     if request.method == 'POST':
         form = ProductForm(request.POST, request.FILES)
@@ -33,3 +33,16 @@ def add_product_view(request):
         form = ProductForm()
     
     return render(request, 'products/add_product.html', {'form': form})
+
+@login_required
+def add_category(request):
+    if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        name = request.POST.get('name')
+        if name:
+            category = Category.objects.create(name=name)
+            return JsonResponse({
+                'success': True,
+                'id': category.id,
+                'name': category.name
+            })
+    return JsonResponse({'success': False}, status=400)

@@ -23,46 +23,43 @@
             </div>
             {% endif %}
             
+            <!-- Обновленные поля ввода как в login.html -->
             <div class="form-group">
-                <label for="username">
-                    <i class="fas fa-user"></i> Имя пользователя
-                </label>
-                {{ form.username }}
+                <label for="id_username">Имя пользователя</label>
+                <input type="text" name="username" id="id_username" 
+                       class="form-control" required
+                       value="{{ form.username.value|default:'' }}">
                 {% if form.username.errors %}
                 <div class="error-text">{{ form.username.errors }}</div>
                 {% endif %}
             </div>
             
             <div class="form-group">
-                <label for="email">
-                    <i class="fas fa-envelope"></i> Email
-                </label>
-                {{ form.email }}
+                <label for="id_email">Email</label>
+                <input type="email" name="email" id="id_email" 
+                       class="form-control" required
+                       value="{{ form.email.value|default:'' }}">
                 {% if form.email.errors %}
                 <div class="error-text">{{ form.email.errors }}</div>
                 {% endif %}
             </div>
             
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="password1">
-                        <i class="fas fa-lock"></i> Пароль
-                    </label>
-                    {{ form.password1 }}
-                    <div class="password-hint">
-                        Минимум 8 символов, буквы и цифры
-                    </div>
+            <div class="form-group">
+                <label for="id_password1">Пароль</label>
+                <input type="password" name="password1" id="id_password1" 
+                       class="form-control" required>
+                <div class="password-hint">
+                    Минимум 8 символов, буквы и цифры
                 </div>
-                
-                <div class="form-group">
-                    <label for="password2">
-                        <i class="fas fa-lock"></i> Подтвердите пароль
-                    </label>
-                    {{ form.password2 }}
-                    {% if form.password2.errors %}
-                    <div class="error-text">{{ form.password2.errors }}</div>
-                    {% endif %}
-                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="id_password2">Подтвердите пароль</label>
+                <input type="password" name="password2" id="id_password2" 
+                       class="form-control" required>
+                {% if form.password2.errors %}
+                <div class="error-text">{{ form.password2.errors }}</div>
+                {% endif %}
             </div>
             
             <button type="submit" class="btn btn-block">

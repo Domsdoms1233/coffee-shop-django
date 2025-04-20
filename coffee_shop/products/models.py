@@ -17,3 +17,14 @@ class Product(models.Model):
     
     def __str__(self):
         return self.name
+    
+class Category(models.Model):
+    name = models.CharField(max_length=100, verbose_name="Название")
+    icon = models.CharField(max_length=50, blank=True, verbose_name="Иконка Font Awesome")
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Категория"
+        verbose_name_plural = "Категории"

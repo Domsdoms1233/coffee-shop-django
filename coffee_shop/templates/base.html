@@ -26,6 +26,12 @@
             
             <nav class="main-nav">
                 <div class="user-actions">
+                    <!-- Кнопка "Добавить кофе" для всех -->
+                    <a href="{% url 'add_product' %}" class="add-coffee-btn">
+                        <i class="fas fa-plus-circle"></i> Добавить кофе
+                    </a>
+                    
+                    <!-- Корзина -->
                     <a href="{% url 'cart' %}" class="cart-link">
                         <i class="fas fa-shopping-cart"></i>
                         <span class="cart-count">
@@ -35,14 +41,21 @@
                         </span>
                     </a>
                     
+                    <!-- Авторизация/профиль -->
                     {% if user.is_authenticated %}
                         <a href="{% url 'profile' %}" class="profile-link">
                             <i class="fas fa-user"></i> {{ user.username }}
                         </a>
-                        <a href="{% url 'logout' %}" class="logout-link">Выйти</a>
+                        <a href="{% url 'logout' %}" class="logout-link">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </a>
                     {% else %}
-                        <a href="{% url 'login' %}" class="login-link">Войти</a>
-                        <a href="{% url 'register' %}" class="register-link">Регистрация</a>
+                        <a href="{% url 'login' %}" class="login-link">
+                            <i class="fas fa-sign-in-alt"></i> Войти
+                        </a>
+                        <a href="{% url 'register' %}" class="register-link">
+                            <i class="fas fa-user-plus"></i> Регистрация
+                        </a>
                     {% endif %}
                 </div>
             </nav>
@@ -60,24 +73,30 @@
         <div class="footer-container">
             <div class="footer-section">
                 <h3>Fox Coffee</h3>
-                <p>Лучший кофе с 2023 года</p>
+                <p>Ваш уютный уголок с лучшим кофе</p>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-telegram"></i></a>
+                    <a href="#"><i class="fab fa-vk"></i></a>
+                </div>
             </div>
             
             <div class="footer-section">
                 <h3>Контакты</h3>
-                <p><i class="fas fa-map-marker-alt"></i> ул. Кофейная, 123</p>
-                <p><i class="fas fa-phone"></i> +7 (123) 456-78-90</p>
+                <p><i class="fas fa-map-marker-alt"></i> ул. Лисья, 42</p>
+                <p><i class="fas fa-phone"></i> +7 (800) 555-35-35</p>
+                <p><i class="fas fa-envelope"></i> hello@foxcoffee.ru</p>
             </div>
             
             <div class="footer-section">
                 <h3>Часы работы</h3>
-                <p>Пн-Пт: 8:00 - 22:00</p>
-                <p>Сб-Вс: 9:00 - 23:00</p>
+                <p><i class="fas fa-coffee"></i> Пн-Пт: 7:00 - 23:00</p>
+                <p><i class="fas fa-weekend"></i> Сб-Вс: 8:00 - 00:00</p>
             </div>
         </div>
         
         <div class="copyright">
-            <p>&copy; 2025 Fox Coffee. Все права защищены.</p>
+            <p>&copy; {% now "Y" %} Fox Coffee. Все права защищены.</p>
         </div>
     </footer>
 
