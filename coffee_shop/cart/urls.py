@@ -6,4 +6,6 @@ urlpatterns = [
     path('add/<int:product_id>/', views.add_to_cart_view, name='add_to_cart'),
     path('remove/<int:item_id>/', views.remove_from_cart_view, name='remove_from_cart'),
     path('update/<int:item_id>/', views.update_quantity_view, name='update_quantity'),
+    path('checkout/', views.checkout_view, name='checkout'),  # Добавляем этот путь
+    path('count/', views.cart_count_view, name='cart_count'),
 ]

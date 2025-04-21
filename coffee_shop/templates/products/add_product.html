@@ -1,113 +1,257 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Добавить кофе | Fox Coffee{% endblock %}
+{% block title %}Управление кофе | Fox Coffee{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/admin.css' %}">
+{% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/add_product.js' %}"></script>
+<script src="{% static 'js/main.js' %}"></script>
 {% endblock %}
 
 {% block content %}
-<div class="auth-page">
-    <div class="auth-card">
-        <div class="auth-header">
-            <i class="fas fa-coffee"></i>
-            <h2>Добавить новый кофе</h2>
-        </div>
-        
-        <form method="POST" enctype="multipart/form-data" class="auth-form" id="add-product-form">
-            {% csrf_token %}
-            
-            <div class="form-group">
-                <label for="{{ form.name.id_for_label }}">
-                    <i class="fas fa-tag"></i> Название кофе
-                </label>
-                {{ form.name }}
-                {% if form.name.errors %}
-                <div class="error-text">{{ form.name.errors }}</div>
-                {% endif %}
-            </div>
-            
-            <div class="form-group">
-                <label for="{{ form.description.id_for_label }}">
-                    <i class="fas fa-align-left"></i> Описание
-                </label>
-                {{ form.description }}
-                {% if form.description.errors %}
-                <div class="error-text">{{ form.description.errors }}</div>
-                {% endif %}
-            </div>
-            
-            <div class="form-row">
+<div class="admin-page">
+    <!-- Вкладки -->
+    <div class="admin-tabs">
+        <button class="tab-btn active" data-tab="products">Кофе</button>
+        <button class="tab-btn" data-tab="categories">Категории</button>
+    </div>
+
+    <!-- Вкладка продуктов -->
+    <div id="products-tab" class="tab-content active">
+        <div class="card">
+            <h3><i class="fas fa-coffee"></i> {{ product_id|yesno:"Редактировать,Добавить новый" }} кофе</h3>
+            <form method="POST" enctype="multipart/form-data" id="product-form">
+                {% csrf_token %}
+                <input type="hidden" name="product_id" id="product-id" value="{{ product.id|default:'' }}">
+                
                 <div class="form-group">
-                    <label for="{{ form.price.id_for_label }}">
-                        <i class="fas fa-ruble-sign"></i> Цена
-                    </label>
-                    {{ form.price }}
-                    {% if form.price.errors %}
-                    <div class="error-text">{{ form.price.errors }}</div>
-                {% endif %}
+                    <label>Название</label>
+                    <input type="text" name="name" id="product-name" class="form-control" 
+                           value="{{ product.name|default:'' }}" required>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Цена</label>
+                        <input type="number" name="price" step="0.01" min="0" class="form-control" 
+                               value="{{ product.price|default:'' }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Категория</label>
+                        <select name="category" class="form-control" required>
+                            {% for category in categories %}
+                            <option value="{{ category.id }}" 
+                                    {% if product.category.id == category.id %}selected{% endif %}>
+                                {{ category.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
                 </div>
                 
                 <div class="form-group">
-                    <label for="{{ form.category.id_for_label }}">
-                        <i class="fas fa-list"></i> Категория
-                    </label>
-                    <div class="select-with-add">
-                        {{ form.category }}
-                        <button type="button" class="add-btn" id="add-category-btn">
-                            <i class="fas fa-plus"></i>
-                        </button>
+                    <label>Описание</label>
+                    <textarea name="description" class="form-control" rows="3">{{ product.description|default:'' }}</textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Изображение</label>
+                    <div class="image-upload-wrapper">
+                        <input type="file" name="image" id="product-image" accept="image/*" 
+                               {% if not product.image %}required{% endif %}>
+                        <label for="product-image" class="btn btn-outline-secondary upload-label">
+                            <i class="fas fa-cloud-upload-alt"></i> 
+                            <span id="image-name">
+                                {% if product.image %}
+                                    {{ product.image.name }}
+                                {% else %}
+                                    Выберите файл
+                                {% endif %}
+                            </span>
+                        </label>
+                        {% if product.image %}
+                        <div class="image-preview">
+                            <img src="{{ product.image.url }}" alt="Текущее изображение">
+                        </div>
+                        {% endif %}
                     </div>
-                    {% if form.category.errors %}
-                    <div class="error-text">{{ form.category.errors }}</div>
+                </div>
+                
+                <div class="form-check">
+                    <input type="checkbox" name="available" id="product-available" 
+                           class="form-check-input" {% if product.available or not product %}checked{% endif %}>
+                    <label for="product-available" class="form-check-label">Доступен</label>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Сохранить
+                    </button>
+                    {% if product %}
+                    <a href="{% url 'product_management' %}" class="btn btn-secondary">
+                        Отмена
+                    </a>
                     {% endif %}
                 </div>
+            </form>
+        </div>
+
+        <div class="card mt-4">
+            <h3><i class="fas fa-list"></i> Список кофе</h3>
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Название</th>
+                            <th>Категория</th>
+                            <th>Цена</th>
+                            <th>Статус</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in products %}
+                        <tr data-id="{{ p.id }}">
+                            <td>{{ p.name }}</td>
+                            <td>{{ p.category.name }}</td>
+                            <td>{{ p.price }} ₽</td>
+                            <td>
+                                <span class="status-badge {% if p.available %}available{% else %}unavailable{% endif %}">
+                                    {{ p.available|yesno:"Доступен,Не доступен" }}
+                                </span>
+                            </td>
+                            <td class="actions">
+                                <a href="{% url 'edit_product' p.id %}" class="btn btn-edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button class="btn btn-delete" data-id="{{ p.id }}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
-            
-            <div class="form-group">
-                <label class="image-upload-label">
-                    <i class="fas fa-image"></i> Изображение кофе
-                    <div class="upload-area" id="upload-area">
-                        <i class="fas fa-cloud-upload-alt upload-icon"></i>
-                        <span id="file-name">Выберите файл</span>
-                        {{ form.image }}
-                    </div>
-                </label>
-                {% if form.image.errors %}
-                <div class="error-text">{{ form.image.errors }}</div>
-                {% endif %}
-            </div>
-            
-            <div class="form-check">
-                {{ form.available }}
-                <label for="{{ form.available.id_for_label }}" class="form-check-label">
-                    Доступен для заказа
-                </label>
-            </div>
-            
-            <div class="form-actions">
+        </div>
+    </div>
+
+    <!-- Вкладка категорий -->
+    <div id="categories-tab" class="tab-content">
+        <div class="card">
+            <h3><i class="fas fa-tag"></i> Добавить категорию</h3>
+            <form id="category-form" method="POST" action="{% url 'add_category' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Название категории</label>
+                    <input type="text" name="name" class="form-control" required>
+                </div>
                 <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-plus-circle"></i> Добавить кофе
+                    <i class="fas fa-plus"></i> Добавить
                 </button>
+            </form>
+        </div>
+
+        <div class="card mt-4">
+            <h3><i class="fas fa-tags"></i> Список категорий</h3>
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Название</th>
+                            <th>Кол-во товаров</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for category in categories %}
+                        <tr data-id="{{ category.id }}">
+                            <td>{{ category.name }}</td>
+                            <td>{{ category.product_set.count }}</td>
+                            <td class="actions">
+                                <button class="btn btn-edit" onclick="editCategory({{ category.id }}, '{{ category.name }}')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-delete" 
+                                        onclick="deleteCategory({{ category.id }})"
+                                        {% if category.product_set.exists %}disabled title="Нельзя удалить категорию с товарами"{% endif %}>
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
-        </form>
+        </div>
     </div>
 </div>
 
-<!-- Модальное окно для категорий -->
-<div class="modal-overlay" id="category-modal">
+<!-- Модальное окно подтверждения удаления -->
+<div class="modal" id="confirm-modal">
     <div class="modal-content">
-        <button class="close-modal">&times;</button>
-        <h3><i class="fas fa-tag"></i> Новая категория</h3>
-        <form id="category-form">
-            {% csrf_token %}
-            <div class="form-group">
-                <input type="text" name="name" placeholder="Название категории" required class="form-control">
-            </div>
-            <button type="submit" class="btn btn-primary">
-                <i class="fas fa-save"></i> Сохранить
-            </button>
-        </form>
+        <span class="close">&times;</span>
+        <h4 class="modal-title">Подтверждение</h4>
+        <div class="modal-body">
+            <p id="confirm-message">Вы уверены, что хотите удалить этот элемент?</p>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="cancel-delete">Отмена</button>
+            <button type="button" class="btn btn-danger" id="confirm-delete">Удалить</button>
+        </div>
     </div>
 </div>
+{% endblock %}
+<script>
+// Исправленный код для редактирования категории
+function editCategory(id, name) {
+    const newName = prompt('Введите новое название категории:', name);
+    if (newName && newName !== name) {
+        fetch(`/products/api/categories/${id}/`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({name: newName})
+        })
+        .then(response => {
+            if (response.ok) {
+                location.reload();
+            } else {
+                throw new Error('Ошибка обновления');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Ошибка при обновлении категории');
+        });
+    }
+}
+
+// Исправленный код для удаления категории
+function deleteCategory(id) {
+    showConfirmModal('Удалить эту категорию?', () => {
+        fetch(`/products/api/categories/${id}/`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                location.reload();
+            } else {
+                throw new Error('Ошибка удаления');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Ошибка при удалении категории');
+        });
+    });
+}
+</script>

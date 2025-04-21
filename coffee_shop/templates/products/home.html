@@ -35,13 +35,15 @@
         {% for product in products %}
         <div class="product-card">
             <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image">
-            <h3>{{ product.name }}</h3>
-            <p class="product-description">{{ product.description|truncatechars:100 }}</p>
-            <div class="product-footer">
-                <span class="price">{{ product.price }} ₽</span>
-                <button class="add-to-cart" data-product-id="{{ product.id }}" aria-label="Добавить в корзину">
-                    <i class="fas fa-plus"></i> В корзину
-                </button>
+            <div class="product-card-content">
+                <h3>{{ product.name }}</h3>
+                <p class="product-description">{{ product.description|truncatechars:100 }}</p>
+                <div class="product-footer">
+                    <span class="price">{{ product.price }} ₽</span>
+                    <button class="add-to-cart" data-product-id="{{ product.id }}" aria-label="Добавить в корзину">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
             </div>
         </div>
         {% empty %}

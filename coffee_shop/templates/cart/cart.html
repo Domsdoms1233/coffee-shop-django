@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Корзина | Orange Coffee{% endblock %}
+{% block title %}Корзина | Fox Coffee{% endblock %}
 
 {% block content %}
 <div class="cart-container">
@@ -11,20 +11,23 @@
     <div class="cart-items">
         {% for item in items %}
         <div class="cart-item">
-            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="cart-item-image">
             
             <div class="item-info">
                 <h3>{{ item.product.name }}</h3>
-                <p class="item-price">{{ item.product.price }} ₽ × {{ item.quantity }}</p>
+                <p class="item-category">{{ item.product.category.name }}</p>
+                <p class="item-price">{{ item.product.price }} ₽ × {{ item.quantity }} = {{ item.total_price }} ₽</p>
             </div>
             
             <div class="item-actions">
-                <form method="POST" action="{% url 'update_quantity' item.id %}">
+                <form method="POST" action="{% url 'update_quantity' item.id %}" class="quantity-form">
                     {% csrf_token %}
-                    <input type="number" name="quantity" value="{{ item.quantity }}" min="1">
-                    <button type="submit" class="btn-update">Обновить</button>
+                    <button type="button" class="quantity-btn minus" data-item-id="{{ item.id }}">-</button>
+                    <input type="number" name="quantity" value="{{ item.quantity }}" min="1" class="quantity-input">
+                    <button type="button" class="quantity-btn plus" data-item-id="{{ item.id }}">+</button>
+                    <button type="submit" class="btn-update hidden">Обновить</button>
                 </form>
-                <a href="{% url 'remove_from_cart' item.id %}" class="btn-remove">
+                <a href="{% url 'remove_from_cart' item.id %}" class="btn-remove" data-item-id="{{ item.id }}">
                     <i class="fas fa-trash"></i>
                 </a>
             </div>
@@ -32,8 +35,11 @@
         {% endfor %}
     </div>
     
-    <div class="cart-total">
-        <h3>Итого: {{ total }} ₽</h3>
+    <div class="cart-summary">
+        <div class="cart-total">
+            <span>Товаров: {{ cart.total_quantity }}</span>
+            <span>Итого: {{ cart.total_price }} ₽</span>
+        </div>
         <a href="{% url 'checkout' %}" class="btn btn-primary">Оформить заказ</a>
     </div>
     {% else %}
