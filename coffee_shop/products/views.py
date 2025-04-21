@@ -4,15 +4,11 @@ from django.contrib.auth.decorators import login_required
 from .models import Product, Category
 from .forms import ProductForm, CategoryForm
 
+@login_required
 def home_view(request):
-    """Главная страница с фильтрацией по категориям"""
+    """Главная страница с товарами"""
     categories = Category.objects.all()
-    category_id = request.GET.get('category')
-    
     products = Product.objects.filter(available=True).select_related('category')
-    if category_id:
-        products = products.filter(category_id=category_id)
-    
     return render(request, 'products/home.html', {
         'products': products,
         'categories': categories
@@ -21,75 +17,88 @@ def home_view(request):
 @login_required
 def product_management(request, product_id=None):
     """
-    Универсальный обработчик для:
-    - Просмотра списка товаров
-    - Добавления нового товара (когда product_id=None)
-    - Редактирования существующего товара
-    - Удаления товара
+    Управление товарами: создание, редактирование, удаление
     """
-    products = Product.objects.all()
+    products = Product.objects.all().select_related('category')
     categories = Category.objects.all()
     product = None
     
-    # Получаем товар для редактирования, если передан ID
     if product_id:
         product = get_object_or_404(Product, id=product_id)
-    
-    # Обработка POST-запроса (добавление/редактирование/удаление)
+
     if request.method == 'POST':
         # Обработка удаления
-        if 'delete' in request.POST:
-            if product:
-                product.delete()
-                messages.success(request, f'Товар "{product.name}" удален!')
-                return redirect('product_management')
+        if 'delete' in request.POST and product:
+            product_name = product.name
+            product.delete()
+            messages.success(request, f'Товар "{product_name}" успешно удалён!')
+            return redirect('product_management')
         
-        # Обработка добавления/редактирования
+        # Обработка формы
         form = ProductForm(request.POST, request.FILES, instance=product)
         if form.is_valid():
             product = form.save()
             action = "отредактирован" if product_id else "добавлен"
             messages.success(request, f'Товар "{product.name}" успешно {action}!')
             return redirect('product_management')
+        else:
+            # Вывод ошибок формы
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'Ошибка в поле "{field}": {error}')
     else:
         form = ProductForm(instance=product)
     
     return render(request, 'products/add_product.html', {
         'products': products,
         'categories': categories,
-        'form': form,
-        'current_product': product
+        'product_form': form,
+        'current_product': product,
+        'active_tab': 'products',
+        'show_products_section': True
     })
 
 @login_required
 def category_management(request, category_id=None):
-    """Управление категориями"""
+    """
+    Управление категориями: создание, редактирование, удаление
+    """
     categories = Category.objects.all()
     category = None
     
     if category_id:
         category = get_object_or_404(Category, id=category_id)
-    
+
     if request.method == 'POST':
+        # Обработка удаления
         if 'delete' in request.POST and category:
             if category.product_set.exists():
                 messages.error(request, 'Нельзя удалить категорию с товарами!')
             else:
+                category_name = category.name
                 category.delete()
-                messages.success(request, f'Категория "{category.name}" удалена!')
+                messages.success(request, f'Категория "{category_name}" успешно удалена!')
             return redirect('category_management')
         
+        # Обработка формы
         form = CategoryForm(request.POST, instance=category)
         if form.is_valid():
             category = form.save()
             action = "отредактирована" if category_id else "добавлена"
             messages.success(request, f'Категория "{category.name}" успешно {action}!')
             return redirect('category_management')
+        else:
+            # Вывод ошибок формы
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'Ошибка в поле "{field}": {error}')
     else:
         form = CategoryForm(instance=category)
     
-    return render(request, 'products/categories.html', {
+    return render(request, 'products/add_product.html', {
         'categories': categories,
-        'form': form,
-        'current_category': category
+        'category_form': form,
+        'current_category': category,
+        'active_tab': 'categories',
+        'show_categories_section': True
     })
