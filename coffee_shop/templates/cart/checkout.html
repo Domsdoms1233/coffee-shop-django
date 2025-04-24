@@ -1,32 +1,87 @@
 {% extends 'base.html' %}
 {% load static %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/static.css' %}">
+{% endblock %}
+
 {% block title %}Оформление заказа | Fox Coffee{% endblock %}
 
 {% block content %}
 <div class="checkout-container">
-    <h2><i class="fas fa-receipt"></i> Оформление заказа</h2>
-    
-    <div class="checkout-summary">
-        <h3>Ваш заказ</h3>
-        <ul class="checkout-items">
-            {% for item in items %}
-            <li>
-                {{ item.product.name }} × {{ item.quantity }} = {{ item.total_price }} ₽
-            </li>
-            {% endfor %}
-        </ul>
-        <div class="checkout-total">
-            <strong>Итого: {{ total }} ₽</strong>
+    <div class="checkout-header">
+        <h2><i class="fas fa-truck"></i> Оформление заказа</h2>
+        <div class="checkout-steps">
+            <div class="step">1. Корзина</div>
+            <div class="step active">2. Оформление</div>
+            <div class="step">3. Подтверждение</div>
         </div>
     </div>
-    
-    <form method="POST" class="checkout-form">
-        {% csrf_token %}
-        <!-- Здесь будут поля формы оформления -->
-        <button type="submit" class="btn btn-primary">
-            <i class="fas fa-check"></i> Подтвердить заказ
-        </button>
-    </form>
+
+    <div class="checkout-grid">
+        <div class="checkout-form-container">
+            <form method="POST" class="checkout-form">
+                {% csrf_token %}
+                <h3><i class="fas fa-user"></i> Контактные данные</h3>
+                <div class="form-group">
+                    <label>Имя</label>
+                    <input type="text" class="form-control" value="{{ request.user.first_name }}" readonly>
+                </div>
+
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" class="form-control" value="{{ request.user.email }}" readonly>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">Телефон *</label>
+                    <input type="tel" class="form-control" id="phone" name="phone" required>
+                </div>
+
+                <h3><i class="fas fa-map-marker-alt"></i> Адрес доставки</h3>
+                <div class="form-group">
+                    <label for="address">Адрес *</label>
+                    <input type="text" class="form-control" id="address" name="address" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="comments">Комментарий к заказу</label>
+                    <textarea class="form-control" id="comments" name="comments" rows="3"
+                        placeholder="Дополнительные пожелания..."></textarea>
+                </div>
+
+                <button type="submit" class="submit-order-btn">
+                    Подтвердить заказ <i class="fas fa-check"></i>
+                </button>
+            </form>
+        </div>
+
+        <div class="order-summary">
+            <h3><i class="fas fa-receipt"></i> Ваш заказ</h3>
+            <div class="order-items">
+                {% for item in cart_items %}
+                <div class="order-item">
+                    <span class="item-name">{{ item.product.name }} × {{ item.quantity }}</span>
+                    <span class="item-price">{{ item.total_price }} ₽</span>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="order-totals">
+                <div class="total-row">
+                    <span>Сумма заказа</span>
+                    <span>{{ total_price }} ₽</span>
+                </div>
+                <div class="total-row">
+                    <span>Доставка</span>
+                    <span>Бесплатно</span>
+                </div>
+                <div class="total-row grand-total">
+                    <span>Итого</span>
+                    <span>{{ total_price }} ₽</span>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

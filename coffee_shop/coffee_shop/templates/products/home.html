@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<section class="hero">
+    <div class="hero-content">
+        <h1>Насладитесь вкусом настоящего кофе</h1>
+        <p>Только отборные зерна и профессиональные бариста</p>
+        <a href="#products" class="btn">Выбрать кофе</a>
+    </div>
+</section>
+
+<section id="products" class="products-section">
+    <h2>Наше меню</h2>
+    
+    <div class="categories">
+        <a href="?category=" 
+           class="category-btn all-btn {% if not request.GET.category %}active{% endif %}"
+           title="Показать все товары">
+           <i class="fas fa-coffee"></i> Все
+        </a>
+        {% for category in categories %}
+        <a href="?category={{ category.id }}" 
+           class="category-btn {% if request.GET.category == category.id|stringformat:'s' %}active{% endif %}"
+           title="{{ category.description|default:category.name }}">
+            {% if category.icon %}
+            <i class="{{ category.icon }}"></i>
+            {% endif %}
+            {{ category.name }}
+        </a>
+        {% endfor %}
+    </div>
+    
+    <div class="products-grid">
+        {% for product in products %}
+        <div class="product-card">
+            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image">
+            <div class="product-card-content">
+                <h3>{{ product.name }}</h3>
+                <p class="product-description">{{ product.description|truncatechars:100 }}</p>
+                <div class="product-footer">
+                    <span class="price">{{ product.price }} ₽</span>
+                    <button class="add-to-cart" data-product-id="{{ product.id }}" aria-label="Добавить в корзину">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="no-products">
+            <i class="fas fa-coffee"></i>
+            <p>Товары не найдены</p>
+            <a href="?category=" class="btn">Сбросить фильтры</a>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

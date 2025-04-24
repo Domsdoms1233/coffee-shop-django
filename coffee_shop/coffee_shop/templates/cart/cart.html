@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Корзина | Fox Coffee{% endblock %}
+
+{% block content %}
+<div class="cart-container">
+    <h2><i class="fas fa-shopping-cart"></i> Ваша корзина</h2>
+    
+    {% if items %}
+    <div class="cart-items">
+        {% for item in items %}
+        <div class="cart-item">
+            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="cart-item-image">
+            
+            <div class="item-info">
+                <h3>{{ item.product.name }}</h3>
+                <p class="item-category">{{ item.product.category.name }}</p>
+                <p class="item-price">{{ item.product.price }} ₽ × {{ item.quantity }} = {{ item.total_price }} ₽</p>
+            </div>
+            
+            <div class="item-actions">
+                <form method="POST" action="{% url 'update_quantity' item.id %}" class="quantity-form">
+                    {% csrf_token %}
+                    <button type="button" class="quantity-btn minus" data-item-id="{{ item.id }}">-</button>
+                    <input type="number" name="quantity" value="{{ item.quantity }}" min="1" class="quantity-input">
+                    <button type="button" class="quantity-btn plus" data-item-id="{{ item.id }}">+</button>
+                    <button type="submit" class="btn-update hidden">Обновить</button>
+                </form>
+                <a href="{% url 'remove_from_cart' item.id %}" class="btn-remove" data-item-id="{{ item.id }}">
+                    <i class="fas fa-trash"></i>
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <div class="cart-summary">
+        <div class="cart-total">
+            <span>Товаров: {{ cart.total_quantity }}</span>
+            <span>Итого: {{ cart.total_price }} ₽</span>
+        </div>
+        <a href="{% url 'checkout' %}" class="btn btn-primary">Оформить заказ</a>
+    </div>
+    {% else %}
+    <div class="cart-empty">
+        <i class="fas fa-coffee"></i>
+        <p>Ваша корзина пуста</p>
+        <a href="{% url 'home' %}" class="btn">Перейти в меню</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

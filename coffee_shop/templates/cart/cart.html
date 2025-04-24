@@ -1,52 +1,84 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Корзина | Fox Coffee{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/static.css' %}">
+{% endblock %}
 
 {% block content %}
 <div class="cart-container">
-    <h2><i class="fas fa-shopping-cart"></i> Ваша корзина</h2>
-    
-    {% if items %}
+    <div class="cart-header">
+        <h2><i class="fas fa-shopping-cart"></i> Ваша корзина</h2>
+        <div class="cart-steps">
+            <div class="step active">1. Корзина</div>
+            <div class="step">2. Оформление</div>
+            <div class="step">3. Подтверждение</div>
+        </div>
+    </div>
+
+    {% if cart_items %}
     <div class="cart-items">
-        {% for item in items %}
+        {% for item in cart_items %}
         <div class="cart-item">
-            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="cart-item-image">
-            
-            <div class="item-info">
+            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="item-image">
+
+            <div class="item-details">
                 <h3>{{ item.product.name }}</h3>
                 <p class="item-category">{{ item.product.category.name }}</p>
-                <p class="item-price">{{ item.product.price }} ₽ × {{ item.quantity }} = {{ item.total_price }} ₽</p>
+                <p class="item-description">{{ item.product.description|truncatewords:15 }}</p>
             </div>
-            
-            <div class="item-actions">
-                <form method="POST" action="{% url 'update_quantity' item.id %}" class="quantity-form">
+
+            <div class="item-quantity">
+                <form method="post" action="{% url 'cart:update_quantity' item.id %}">
                     {% csrf_token %}
-                    <button type="button" class="quantity-btn minus" data-item-id="{{ item.id }}">-</button>
+                    <button type="button" class="quantity-btn minus"
+                        onclick="this.parentNode.querySelector('input[type=number]').stepDown(); this.parentNode.submit()">
+                        <i class="fas fa-minus"></i>
+                    </button>
                     <input type="number" name="quantity" value="{{ item.quantity }}" min="1" class="quantity-input">
-                    <button type="button" class="quantity-btn plus" data-item-id="{{ item.id }}">+</button>
-                    <button type="submit" class="btn-update hidden">Обновить</button>
+                    <button type="button" class="quantity-btn plus"
+                        onclick="this.parentNode.querySelector('input[type=number]').stepUp(); this.parentNode.submit()">
+                        <i class="fas fa-plus"></i>
+                    </button>
                 </form>
-                <a href="{% url 'remove_from_cart' item.id %}" class="btn-remove" data-item-id="{{ item.id }}">
-                    <i class="fas fa-trash"></i>
+            </div>
+
+            <div class="item-price">
+                <span class="price">{{ item.total_price }} ₽</span>
+                <a href="{% url 'cart:remove_from_cart' item.id %}" class="remove-btn">
+                    <i class="fas fa-trash-alt"></i>
                 </a>
             </div>
         </div>
         {% endfor %}
     </div>
-    
+
     <div class="cart-summary">
-        <div class="cart-total">
-            <span>Товаров: {{ cart.total_quantity }}</span>
-            <span>Итого: {{ cart.total_price }} ₽</span>
+        <div class="summary-card">
+            <h3>Итог заказа</h3>
+            <div class="summary-row">
+                <span>Товары ({{ cart_items|length }})</span>
+                <span>{{ total_price }} ₽</span>
+            </div>
+            <div class="summary-row">
+                <span>Доставка</span>
+                <span>Бесплатно</span>
+            </div>
+            <div class="summary-row total">
+                <span>Итого</span>
+                <span>{{ total_price }} ₽</span>
+            </div>
+            <a href="{% url 'cart:checkout' %}" class="checkout-btn">
+                Оформить заказ <i class="fas fa-arrow-right"></i>
+            </a>
         </div>
-        <a href="{% url 'checkout' %}" class="btn btn-primary">Оформить заказ</a>
     </div>
     {% else %}
-    <div class="cart-empty">
+    <div class="empty-cart">
         <i class="fas fa-coffee"></i>
-        <p>Ваша корзина пуста</p>
-        <a href="{% url 'home' %}" class="btn">Перейти в меню</a>
+        <h3>Ваша корзина пуста</h3>
+        <p>Добавьте товары, чтобы продолжить</p>
+        <a href="{% url 'home' %}" class="btn btn-primary">Вернуться к покупкам</a>
     </div>
     {% endif %}
 </div>

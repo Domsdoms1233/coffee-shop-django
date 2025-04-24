@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/order_confirmation.css' %}">
+{% endblock %}
+
+{% block title %}Подтверждение заказа | Fox Coffee{% endblock %}
+
+{% block content %}
+<div class="confirmation-container">
+    <div class="confirmation-card">
+        <div class="confirmation-header">
+            <i class="fas fa-check-circle success-icon"></i>
+            <h2>Ваш заказ оформлен!</h2>
+            <p class="order-number">Номер заказа: <strong>{{ order.order_number }}</strong></p>
+        </div>
+
+        <div class="confirmation-details">
+            <div class="detail-row">
+                <i class="fas fa-user"></i>
+                <div>
+                    <h3>Получатель</h3>
+                    <p>{{ order.user.get_full_name }}</p>
+                </div>
+            </div>
+
+            <div class="detail-row">
+                <i class="fas fa-phone"></i>
+                <div>
+                    <h3>Телефон</h3>
+                    <p>{{ order.phone }}</p>
+                </div>
+            </div>
+
+            <div class="detail-row">
+                <i class="fas fa-map-marker-alt"></i>
+                <div>
+                    <h3>Адрес доставки</h3>
+                    <p>{{ order.address }}</p>
+                </div>
+            </div>
+
+            <div class="detail-row">
+                <i class="fas fa-clock"></i>
+                <div>
+                    <h3>Время доставки</h3>
+                    <p>Примерно 30-45 минут</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="order-summary">
+            <h3><i class="fas fa-receipt"></i> Состав заказа</h3>
+            <div class="summary-items">
+                {% for item in order.items.all %}
+                <div class="summary-item">
+                    <span>{{ item.product.name }} × {{ item.quantity }}</span>
+                    <span>{{ item.price }} ₽</span>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="summary-total">
+                <span>Итого:</span>
+                <span>{{ order.total_price }} ₽</span>
+            </div>
+        </div>
+
+        <div class="confirmation-actions">
+            <a href="{% url 'profile' %}" class="btn btn-outline">
+                <i class="fas fa-user"></i> Перейти в профиль
+            </a>
+            <a href="{% url 'home' %}" class="btn btn-primary">
+                <i class="fas fa-coffee"></i> Вернуться в магазин
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
