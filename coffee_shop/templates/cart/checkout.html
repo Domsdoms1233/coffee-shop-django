@@ -3,7 +3,34 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/static.css' %}">
-{% endblock %}
+<style>
+    /* Foxcoins section styles */
+    .foxcoins-section {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border: 1px solid #eaeaea;
+    }
+    
+    .foxcoins-section h4 {
+        color: #6c757d;
+        margin-bottom: 10px;
+        font-size: 1.1rem;
+    }
+    
+    #foxcoins_input {
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px dashed #dee2e6;
+    }
+    
+    .fox-coin-icon {
+        color: #FFA500;
+        margin-right: 5px;
+    }
+</style>
+{% endblock extra_css %}
 
 {% block title %}Оформление заказа | Fox Coffee{% endblock %}
 
@@ -35,13 +62,15 @@
 
                 <div class="form-group">
                     <label for="phone">Телефон *</label>
-                    <input type="tel" class="form-control" id="phone" name="phone" required>
+                    <input type="tel" class="form-control" id="phone" name="phone" 
+                           value="{{ request.user.phone }}" required>
                 </div>
 
                 <h3><i class="fas fa-map-marker-alt"></i> Адрес доставки</h3>
                 <div class="form-group">
                     <label for="address">Адрес *</label>
-                    <input type="text" class="form-control" id="address" name="address" required>
+                    <input type="text" class="form-control" id="address" name="address" 
+                           value="{{ request.user.address }}" required>
                 </div>
 
                 <div class="form-group">
@@ -66,6 +95,32 @@
                 </div>
                 {% endfor %}
             </div>
+                
+            <div class="foxcoins-section">
+                <h4><i class="fas fa-coins fox-coin-icon"></i> Оплата Foxcoins</h4>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="use_foxcoins" name="use_foxcoins"
+                           {% if max_foxcoins > 0 and request.user.foxcoins > 0 %}checked{% endif %}>
+                    <label class="form-check-label" for="use_foxcoins">
+                        Использовать Foxcoins
+                    </label>
+                </div>
+                
+                <div id="foxcoins_input" class="{% if max_foxcoins > 0 and request.user.foxcoins > 0 %}d-block{% else %}d-none{% endif %} mt-2">
+                    <div class="alert alert-info p-2 mb-2">
+                        <small>
+                            Доступно: <strong>{{ request.user.foxcoins }}</strong> Foxcoins<br>
+                            Можно использовать до: <strong>{{ max_foxcoins }}</strong> Foxcoins (50% от заказа)
+                        </small>
+                    </div>
+                    <input type="number" name="foxcoins_amount" 
+                           class="form-control form-control-sm"
+                           min="1" 
+                           max="{{ max_foxcoins }}"
+                           value="{% if max_foxcoins > 0 and request.user.foxcoins > 0 %}{{ max_foxcoins|default:request.user.foxcoins }}{% else %}0{% endif %}">
+                    <small class="text-muted">1 Foxcoin = 1 рубль</small>
+                </div>
+            </div>
 
             <div class="order-totals">
                 <div class="total-row">
@@ -85,3 +140,43 @@
     </div>
 </div>
 {% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+    document.addEventListener('DOMContentLoaded', function() {
+        // Элементы формы
+        const foxcoinsCheckbox = document.getElementById('use_foxcoins');
+        const foxcoinsInput = document.getElementById('foxcoins_input');
+        const amountInput = document.querySelector('input[name="foxcoins_amount"]');
+        
+        if (!foxcoinsCheckbox || !foxcoinsInput || !amountInput) return;
+        
+        // Инициализация значений
+        const maxAvailable = parseInt(amountInput.max) || 0;
+        const currentValue = parseInt(amountInput.value) || 0;
+        amountInput.value = Math.min(currentValue, maxAvailable);
+        
+        // Обработчик изменения чекбокса
+        foxcoinsCheckbox.addEventListener('change', function() {
+            foxcoinsInput.style.display = this.checked ? 'block' : 'none';
+            if (this.checked) {
+                amountInput.value = Math.min(
+                    parseInt("{{ request.user.foxcoins }}"), 
+                    parseInt("{{ max_foxcoins }}")
+                );
+            }
+        });
+        
+        // Валидация ввода
+        amountInput.addEventListener('input', function() {
+            const maxAllowed = Math.min(
+                parseInt("{{ request.user.foxcoins }}"), 
+                parseInt("{{ max_foxcoins }}")
+            );
+            this.value = Math.min(parseInt(this.value) || 0, maxAllowed);
+        });
+    });
+})();
+</script>
+{% endblock extra_js %}

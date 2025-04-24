@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Профиль | Fox Coffee{% endblock %}
+
+{% block content %}
+<div class="centered-profile">
+    <div class="profile-card">
+        <div class="fox-icon">🦊</div>
+        <h2>{{ user.username }}</h2>
+        
+        <div class="profile-info">
+            <div class="info-row">
+                <i class="fas fa-envelope"></i>
+                <span>{{ user.email }}</span>
+            </div>
+        </div>
+        
+        <a href="{% url 'logout' %}" class="logout-btn">
+            <i class="fas fa-sign-out-alt"></i> Выйти
+        </a>
+    </div>
+</div>
+{% endblock %}

@@ -4,15 +4,21 @@ from django.contrib.auth.decorators import login_required
 from .models import Product, Category
 from .forms import ProductForm, CategoryForm
 
-@login_required
+
 def home_view(request):
-    """Главная страница с товарами"""
+    category_id = request.GET.get('category')
+    
+    products = Product.objects.filter(available=True)
     categories = Category.objects.all()
-    products = Product.objects.filter(available=True).select_related('category')
-    return render(request, 'products/home.html', {
+    
+    if category_id:
+        products = products.filter(category_id=category_id)
+    
+    context = {
         'products': products,
-        'categories': categories
-    })
+        'categories': categories,
+    }
+    return render(request, 'products/home.html', context)
 
 @login_required
 def product_management(request, product_id=None):

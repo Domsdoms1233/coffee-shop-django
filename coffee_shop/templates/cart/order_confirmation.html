@@ -60,10 +60,20 @@
                 </div>
                 {% endfor %}
             </div>
-
+        
+            {% if order.foxcoins_used > 0 %}
+            <div class="summary-item">
+                <span>Использовано Foxcoins</span>
+                <span>-{{ order.foxcoins_used }} ₽</span>
+            </div>
+            {% endif %}
+        
             <div class="summary-total">
                 <span>Итого:</span>
                 <span>{{ order.total_price }} ₽</span>
+                {% if order.foxcoins_used > 0 %}
+                <small class="text-muted">(без скидки: {{ order.get_original_total }} ₽)</small>
+                {% endif %}
             </div>
         </div>
 

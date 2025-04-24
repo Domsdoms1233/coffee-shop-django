@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Регистрация | Fox Coffee{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="auth-card">
+        <div class="auth-header">
+            <i class="fas fa-user-plus fox-icon"></i>
+            <h2>Создайте аккаунт</h2>
+            <p>Присоединяйтесь к Fox Coffee</p>
+        </div>
+        
+        <form method="POST" class="auth-form">
+            {% csrf_token %}
+            
+            {% if form.errors %}
+            <div class="message message-error">
+                <i class="fas fa-exclamation-circle"></i>
+                Пожалуйста, исправьте ошибки ниже
+                <button class="close-message">&times;</button>
+            </div>
+            {% endif %}
+            
+            <!-- Обновленные поля ввода как в login.html -->
+            <div class="form-group">
+                <label for="id_username">Имя пользователя</label>
+                <input type="text" name="username" id="id_username" 
+                       class="form-control" required
+                       value="{{ form.username.value|default:'' }}">
+                {% if form.username.errors %}
+                <div class="error-text">{{ form.username.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="id_email">Email</label>
+                <input type="email" name="email" id="id_email" 
+                       class="form-control" required
+                       value="{{ form.email.value|default:'' }}">
+                {% if form.email.errors %}
+                <div class="error-text">{{ form.email.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="id_password1">Пароль</label>
+                <input type="password" name="password1" id="id_password1" 
+                       class="form-control" required>
+                <div class="password-hint">
+                    Минимум 8 символов, буквы и цифры
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="id_password2">Подтвердите пароль</label>
+                <input type="password" name="password2" id="id_password2" 
+                       class="form-control" required>
+                {% if form.password2.errors %}
+                <div class="error-text">{{ form.password2.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <button type="submit" class="btn btn-block">
+                <i class="fas fa-paw"></i> Зарегистрироваться
+            </button>
+        </form>
+        
+        <div class="auth-footer">
+            <p>Уже есть аккаунт? <a href="{% url 'login' %}" class="text-link">Войти</a></p>
+        </div>
+    </div>
+</div>
+
+<script>
+// Закрытие сообщений об ошибках
+document.querySelectorAll('.close-message').forEach(button => {
+    button.addEventListener('click', (e) => {
+        e.target.closest('.message').remove();
+    });
+});
+</script>
+{% endblock %}

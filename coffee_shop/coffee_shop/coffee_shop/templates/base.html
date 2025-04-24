@@ -1,0 +1,109 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Fox Coffee{% endblock %}</title>
+    
+    <!-- Подключение Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Основные стили -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    
+    <!-- Дополнительные стили из блоков -->
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Шапка сайта -->
+    <header class="site-header">
+        <div class="header-container">
+            <a href="{% url 'home' %}" class="logo">
+                <img src="{% static 'images/fox-logo.png' %}" alt="Fox Coffee" class="logo-image">
+                Fox Coffee
+            </a>
+            
+            <nav class="main-nav">
+                <div class="user-actions">
+                    <!-- Кнопка "Добавить кофе" для всех -->
+                    <a href="{% url 'product_management' %}" class="add-coffee-btn">
+                        <i class="fas fa-plus-circle"></i> Добавить позицию
+                    </a>
+                    
+                    <!-- Корзина -->
+                    <a href="{% url 'cart' %}" class="cart-link">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count">
+                            {% if request.user.is_authenticated %}
+                                {{ request.user.cart.cartitem_set.count }}
+                            {% else %}0{% endif %}
+                        </span>
+                    </a>
+                    
+                    <!-- Авторизация/профиль -->
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'profile' %}" class="profile-link">
+                            <i class="fas fa-user"></i> {{ user.username }}
+                        </a>
+                        <a href="{% url 'logout' %}" class="logout-link">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </a>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="login-link">
+                            <i class="fas fa-sign-in-alt"></i> Войти
+                        </a>
+                        <a href="{% url 'register' %}" class="register-link">
+                            <i class="fas fa-user-plus"></i> Регистрация
+                        </a>
+                    {% endif %}
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Основное содержимое -->
+    <main class="container">
+        {% include 'includes/messages.html' %}
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Подвал сайта -->
+    <footer class="site-footer">
+        <div class="footer-container">
+            <div class="footer-section">
+                <h3>Fox Coffee</h3>
+                <p>Ваш уютный уголок с лучшим кофе</p>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-telegram"></i></a>
+                    <a href="#"><i class="fab fa-vk"></i></a>
+                </div>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Контакты</h3>
+                <p><i class="fas fa-map-marker-alt"></i> ул. Лисья, 42</p>
+                <p><i class="fas fa-phone"></i> +7 (800) 555-35-35</p>
+                <p><i class="fas fa-envelope"></i> hello@foxcoffee.ru</p>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Часы работы</h3>
+                <p><i class="fas fa-coffee"></i> Пн-Пт: 7:00 - 23:00</p>
+                <p><i class="fas fa-weekend"></i> Сб-Вс: 8:00 - 00:00</p>
+            </div>
+        </div>
+        
+        <div class="copyright">
+            <p>&copy; {% now "Y" %} Fox Coffee. Все права защищены.</p>
+        </div>
+    </footer>
+
+    <!-- Основные скрипты -->
+    <script src="{% static 'js/main.js' %}"></script>
+    
+    <!-- Дополнительные скрипты из блоков -->
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

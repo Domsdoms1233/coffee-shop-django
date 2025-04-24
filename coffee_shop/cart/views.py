@@ -1,20 +1,17 @@
+from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import Product, Cart, CartItem, Order, OrderItem
+from .models import Cart, CartItem, Order, OrderItem
+from products.models import Product
 import uuid
-from datetime import datetime
-
+from decimal import Decimal, getcontext
 
 @login_required
 def view_cart(request):
-    try:
-        cart = Cart.objects.get(user=request.user)
-        cart_items = cart.items.select_related('product')  
-        total_price = sum(item.total_price for item in cart_items)
-    except Cart.DoesNotExist:
-        cart_items = []
-        total_price = 0
+    cart, created = Cart.objects.get_or_create(user=request.user)
+    cart_items = cart.items.select_related('product')
+    total_price = sum(item.product.price * item.quantity for item in cart_items)
     
     context = {
         'cart_items': cart_items,
@@ -24,63 +21,78 @@ def view_cart(request):
 
 @login_required
 def checkout(request):
-    try:
-        cart = request.user.cart
-        
-        if request.method == 'POST':
-            # Валидация данных
-            address = request.POST.get('address')
-            phone = request.POST.get('phone')
+    cart = get_object_or_404(Cart, user=request.user)
+    
+    if not cart.items.exists():
+        return redirect('cart:view_cart')
+    
+    getcontext().prec = 6
+    total_price = sum(Decimal(str(item.product.price)) * item.quantity for item in cart.items.all())
+    max_foxcoins = min(request.user.foxcoins, int(total_price / Decimal('2')))
+    
+    if request.method == 'POST':
+        try:
+            # Обработка формы
+            use_foxcoins = request.POST.get('use_foxcoins') == 'on'
+            foxcoins_amount = int(request.POST.get('foxcoins_amount', 0))
             
-            if not address or not phone:
-                messages.error(request, 'Пожалуйста, заполните все обязательные поля')
-                return redirect('cart:checkout')
+            # Валидация Foxcoins
+            if use_foxcoins:
+                if foxcoins_amount <= 0:
+                    raise ValueError("Введите положительное количество Foxcoins")
+                if foxcoins_amount > max_foxcoins:
+                    raise ValueError(f"Можно использовать не более {max_foxcoins} Foxcoins")
+                if foxcoins_amount > request.user.foxcoins:
+                    raise ValueError("Недостаточно Foxcoins на счету")
             
-            # Генерация номера заказа только при подтверждении
-            order_number = f"FOX-{datetime.now().strftime('%Y%m%d')}-{uuid.uuid4().hex[:6].upper()}"
+            # Расчет итоговой суммы
+            final_price = float(total_price) - (foxcoins_amount if use_foxcoins else 0)
             
             # Создание заказа
             order = Order.objects.create(
                 user=request.user,
-                order_number=order_number,
-                total_price=cart.total_price,
-                address=address,
-                phone=phone,
-                comments=request.POST.get('comments', '')
+                phone=request.POST.get('phone'),
+                address=request.POST.get('address'),
+                comments=request.POST.get('comments', ''),
+                total_price=final_price,
+                foxcoins_used=foxcoins_amount if use_foxcoins else 0,
+                order_number=str(uuid.uuid4())[:8].upper()
             )
             
-            # Перенос товаров в заказ
+            # Добавление товаров в заказ
             for item in cart.items.all():
                 OrderItem.objects.create(
                     order=order,
                     product=item.product,
-                    quantity=item.quantity,
-                    price=item.product.price
+                    price=float(item.product.price),
+                    quantity=item.quantity
                 )
+            
+            # Обновление Foxcoins пользователя
+            if use_foxcoins:
+                request.user.foxcoins -= foxcoins_amount
+            
+            # Начисление бонусов (10% от суммы заказа)
+            bonus = int(Decimal(str(final_price)) * Decimal('0.10'))
+            request.user.foxcoins += bonus
+            request.user.save()
             
             # Очистка корзины
             cart.items.all().delete()
             
-            # Перенаправляем на страницу подтверждения
+            messages.success(request, f"Заказ оформлен! Начислено {bonus} Foxcoins")
             return redirect('cart:order_confirmation', order_number=order.order_number)
             
-        else:
-            # GET запрос - просто отображаем форму
-            cart_items = cart.items.select_related('product')
-            
-            if not cart_items:
-                messages.warning(request, 'Ваша корзина пуста')
-                return redirect('cart:view_cart')
-            
-            context = {
-                'cart_items': cart_items,
-                'total_price': cart.total_price,
-            }
-            return render(request, 'cart/checkout.html', context)
+        except Exception as e:
+            messages.error(request, f"Ошибка: {str(e)}")
+            return redirect('cart:checkout')
     
-    except Cart.DoesNotExist:
-        messages.error(request, 'Корзина не найдена')
-        return redirect('cart:view_cart')
+    return render(request, 'cart/checkout.html', {
+        'cart_items': cart.items.all(),
+        'total_price': float(total_price),
+        'max_foxcoins': max_foxcoins,
+        'user_foxcoins': request.user.foxcoins
+    })
 
 @login_required
 def order_confirmation(request, order_number):
@@ -110,7 +122,7 @@ def add_to_cart(request, product_id):
                 return JsonResponse({
                     'success': True,
                     'message': f'Товар "{product.name}" добавлен в корзину',
-                    'cart_count': cart.items.count()  # Используем items вместо cartitem_set
+                    'cart_count': cart.items.count()
                 })
             
             return redirect(request.META.get('HTTP_REFERER', 'home'))
@@ -150,13 +162,13 @@ def update_quantity(request, item_id):
 
 @login_required
 def clear_cart(request):
-    cart = get_object_or_404(Cart, user=request.user)
+    cart, created = Cart.objects.get_or_create(user=request.user)
     cart.items.all().delete()
     messages.success(request, 'Корзина очищена')
     return redirect('cart:view_cart')
 
 @login_required
 def get_cart_count(request):
-    cart = Cart.objects.get(user=request.user)
+    cart, created = Cart.objects.get_or_create(user=request.user)
     count = cart.items.count()
     return JsonResponse({'count': count})

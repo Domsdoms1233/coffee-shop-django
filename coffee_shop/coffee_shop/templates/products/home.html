@@ -12,17 +12,16 @@
 
 <section id="products" class="products-section">
     <h2>Наше меню</h2>
-    
+
     <div class="categories">
-        <a href="?category=" 
-           class="category-btn all-btn {% if not request.GET.category %}active{% endif %}"
-           title="Показать все товары">
-           <i class="fas fa-coffee"></i> Все
+        <a href="?category=" class="category-btn all-btn {% if not request.GET.category %}active{% endif %}"
+            title="Показать все товары">
+            <i class="fas fa-coffee"></i> Все
         </a>
         {% for category in categories %}
-        <a href="?category={{ category.id }}" 
-           class="category-btn {% if request.GET.category == category.id|stringformat:'s' %}active{% endif %}"
-           title="{{ category.description|default:category.name }}">
+        <a href="?category={{ category.id }}"
+            class="category-btn {% if request.GET.category == category.id|stringformat:'s' %}active{% endif %}"
+            title="{{ category.description|default:category.name }}">
             {% if category.icon %}
             <i class="{{ category.icon }}"></i>
             {% endif %}
@@ -30,7 +29,7 @@
         </a>
         {% endfor %}
     </div>
-    
+
     <div class="products-grid">
         {% for product in products %}
         <div class="product-card">
@@ -40,9 +39,12 @@
                 <p class="product-description">{{ product.description|truncatechars:100 }}</p>
                 <div class="product-footer">
                     <span class="price">{{ product.price }} ₽</span>
-                    <button class="add-to-cart" data-product-id="{{ product.id }}" aria-label="Добавить в корзину">
-                        <i class="fas fa-plus"></i>
-                    </button>
+                    <form action="{% url 'cart:add_to_cart' product.id %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="add-to-cart">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -55,4 +57,41 @@
         {% endfor %}
     </div>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Обработка добавления в корзину
+    document.querySelectorAll('.add-to-cart-form').forEach(form => {
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Обновляем счетчик корзины
+                        document.querySelector('.cart-count').textContent = data.cart_count;
+
+                        // Показываем уведомление
+                        alert(data.message);
+                    } else {
+                        alert('Ошибка: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Произошла ошибка при добавлении в корзину');
+                });
+        });
+    });
+</script>
 {% endblock %}
