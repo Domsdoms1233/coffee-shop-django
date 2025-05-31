@@ -88,6 +88,11 @@ class Order(models.Model):
         ('completed', 'Выполнен'),
         ('cancelled', 'Отменен'),
     )
+    
+    admin_comment = models.TextField(
+        blank=True,
+        verbose_name='Комментарий администратора'
+    )
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,

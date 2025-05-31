@@ -1,0 +1,140 @@
+{% if page_obj.paginator.num_pages > 1 %}
+<div class="custom-pagination">
+    <div class="pagination-container">
+        <div class="pagination-nav">
+            {% if page_obj.has_previous %}
+                <a href="?page=1" class="pagination-first">
+                    <i class="fas fa-angle-double-left"></i>
+                </a>
+                <a href="?page={{ page_obj.previous_page_number }}" class="pagination-prev">
+                    <i class="fas fa-angle-left"></i>
+                </a>
+            {% else %}
+                <span class="pagination-first disabled">
+                    <i class="fas fa-angle-double-left"></i>
+                </span>
+                <span class="pagination-prev disabled">
+                    <i class="fas fa-angle-left"></i>
+                </span>
+            {% endif %}
+
+            <div class="pagination-pages">
+                {% for num in page_obj.paginator.page_range %}
+                    {% if num == page_obj.number %}
+                        <span class="pagination-current">{{ num }}</span>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <a href="?page={{ num }}" class="pagination-page">{{ num }}</a>
+                    {% elif num == 1 or num == page_obj.paginator.num_pages %}
+                        <a href="?page={{ num }}" class="pagination-page">{{ num }}</a>
+                    {% elif num == page_obj.number|add:'-3' or num == page_obj.number|add:'3' %}
+                        <span class="pagination-ellipsis">...</span>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}" class="pagination-next">
+                    <i class="fas fa-angle-right"></i>
+                </a>
+                <a href="?page={{ page_obj.paginator.num_pages }}" class="pagination-last">
+                    <i class="fas fa-angle-double-right"></i>
+                </a>
+            {% else %}
+                <span class="pagination-next disabled">
+                    <i class="fas fa-angle-right"></i>
+                </span>
+                <span class="pagination-last disabled">
+                    <i class="fas fa-angle-double-right"></i>
+                </span>
+            {% endif %}
+        </div>
+        <div class="pagination-info">
+            Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
+        </div>
+    </div>
+</div>
+
+<style>
+    .custom-pagination {
+        margin: 30px 0;
+        display: flex;
+        justify-content: center;
+    }
+    
+    .pagination-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .pagination-nav {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .pagination-pages {
+        display: flex;
+        gap: 5px;
+    }
+    
+    .pagination-first,
+    .pagination-prev,
+    .pagination-next,
+    .pagination-last,
+    .pagination-page {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 6px;
+        color: #ff6933;
+        background: #f8f9fa;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+    
+    .pagination-current {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 6px;
+        background: linear-gradient(135deg, #ff6933 0%, #e03f05 100%);
+        color: white;
+        font-weight: 500;
+    }
+    
+    .pagination-page:hover,
+    .pagination-first:hover,
+    .pagination-prev:hover,
+    .pagination-next:hover,
+    .pagination-last:hover {
+        background: #e2d6ff;
+        transform: translateY(-2px);
+    }
+    
+    .disabled {
+        color: #adb5bd !important;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+    
+    .pagination-ellipsis {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        color: #adb5bd;
+    }
+    
+    .pagination-info {
+        font-size: 14px;
+        color: #6c757d;
+    }
+</style>
+{% endif %}

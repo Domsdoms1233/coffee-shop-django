@@ -1,6 +1,6 @@
 /* Основные переменные и сброс стилей */
 :root {
-  --fox-orange: #FF6B35;
+  --fox-orange: #ff6933;
   /* Основной рыжий цвет лисы */
   --fox-dark: #E04E10;
   /* Тёмный оттенок для hover-эффектов */
@@ -2587,4 +2587,99 @@ textarea.form-control {
 
 .delete-form {
   display: inline;
+}
+
+/* Пагинация */
+.pagination {
+  margin-top: 20px;
+}
+
+.page-item.active .page-link {
+  background-color: #ff6933;
+  border-color: #ff6933;
+}
+
+.page-link {
+  color: #ff6933;
+}
+
+.page-link:hover {
+  color: #ff6933;
+}
+
+/* Добавьте в static/css/style.css */
+.text-purple {
+  color: #ff6933;
+}
+
+.btn-purple {
+  background-color: #ff6933;
+  color: white;
+  border: none;
+}
+
+.btn-purple:hover {
+  background-color: #ff6933;
+  color: white;
+}
+
+.admin-table th {
+  background-color: #f8f9fa;
+  color: #ff6933;
+}
+
+.status-badge {
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-weight: 500;
+}
+
+.status-new {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.status-processing {
+  background-color: #cce5ff;
+  color: #004085;
+}
+
+.status-completed {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.status-cancelled {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+/* Стили для кнопки админки */
+.admin-link {
+  background-color: #ffffff;
+  color: #ff6933 !important;
+  padding: 8px 15px;
+  border-radius: 5px;
+  margin-left: 10px;
+  transition: all 0.3s ease;
+}
+
+.admin-link:hover {
+  background-color: #ff6933;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.admin-link i {
+  margin-right: 5px;
+}
+
+/* Анимация при переключении страниц */
+.pagination-transition {
+  animation: paginationFade 0.5s ease;
+}
+
+@keyframes paginationFade {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }

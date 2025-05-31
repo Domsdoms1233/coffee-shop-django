@@ -27,11 +27,22 @@
             </a>
 
             <nav class="main-nav">
+                
                 <div class="user-actions">
-                    <!-- Кнопка "Добавить кофе" для всех -->
+                    
+                    
+                    {% if user.is_superuser %}
+                    <a href="{% url 'custom_admin:admin_panel' %}" class="admin-link" style="display: none;">
+                        <i class="fas fa-cog"></i> Админка
+                    </a>
+                    {% endif %}
+                    
+                    <!-- Кнопка "Добавить кофе"-->
+                    {% if user.is_superuser %}
                     <a href="{% url 'product_management' %}" class="add-coffee-btn">
                         <i class="fas fa-plus-circle"></i> Добавить позицию
                     </a>
+                    {% endif %}
 
                     <!-- Корзина -->
                     <a href="{% url 'cart:view_cart' %}" class="cart-link">
@@ -107,6 +118,14 @@
     <script src="{% static 'js/cart.js' %}"></script>
 
     <!-- Дополнительные скрипты из блоков -->
+    <script>
+        // Показываем кнопку админки только для суперпользователей
+        document.addEventListener('DOMContentLoaded', function() {
+            if (document.querySelector('.admin-link')) {
+                document.querySelector('.admin-link').style.display = 'inline-block';
+            }
+        });
+        </script>
     {% block extra_js %}{% endblock %}
 </body>
 
